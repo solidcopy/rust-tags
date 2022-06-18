@@ -26,15 +26,16 @@ impl TagIO for FlacIOImpl {
         for artist in get_str_vec(&file_tags, "ARTIST") {
             tags.add_artist(artist.to_string());
         }
-        let image = match file_tags.pictures().next() {
-            Some(picture) => {
+
+        for picture in file_tags.pictures() {
+            if picture.picture_type == PictureType::CoverFront {
                 let format = ImageFormat::from_data(&picture.data)?;
-                let data = picture.data.clone();
-                Some(Image { format, data })
+                let data = picture.data.to_owned();
+                let image = Some(Image { format, data });
+                tags.set_art_work(image);
+                break;
             }
-            None => None,
-        };
-        tags.set_art_work(image);
+        }
 
         Ok(tags)
     }
