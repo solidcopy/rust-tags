@@ -43,6 +43,7 @@ impl TagIO for FlacIOImpl {
         let mut file_tag = Tag::read_from_path(filepath)?;
 
         file_tag.remove_blocks(BlockType::VorbisComment);
+        file_tag.remove_blocks(BlockType::Picture);
 
         set_string(&mut file_tag, "ALBUM", tags.album());
         set_string(&mut file_tag, "ALBUMARTIST", tags.album_artist());
