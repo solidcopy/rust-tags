@@ -59,10 +59,6 @@ impl TagIO for FlacIOImpl {
 
         Ok(())
     }
-
-    fn extension(&self) -> &'static str {
-        "flac"
-    }
 }
 
 fn get_string<'a>(tags: &'a Tag, item_name: &str) -> Option<&'a str> {

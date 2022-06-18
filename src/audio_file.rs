@@ -148,8 +148,10 @@ impl AudioFile {
 
         filename.push_str(tags.title().unwrap());
 
-        let extension = self.tag_io.extension();
-        write!(filename, ".{}", extension)?;
+        if let Some(extension) = self.filepath.extension() {
+            let extension = extension.to_str().unwrap();
+            write!(filename, ".{}", extension)?;
+        }
 
         let filename = Regex::new("[*\\\\|:\"<>/?]").unwrap().replace_all(filename.as_str(), "");
 

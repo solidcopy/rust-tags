@@ -16,7 +16,6 @@ pub mod flac_tag_io;
 pub trait TagIO {
     fn load(&self, filepath: &Path) -> Result<Tags>;
     fn save(&self, filepath: &Path, tags: &Tags) -> Result<()>;
-    fn extension(&self) -> &'static str;
 }
 
 /// 指定されたファイルの形式に対応するタグIO実装を返す。
