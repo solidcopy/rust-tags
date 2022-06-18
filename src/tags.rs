@@ -7,8 +7,10 @@ use imghdr;
 use crate::common::Result;
 use crate::model::{AlbumInfo, DiscInfo, TrackInfo};
 use crate::tags::flac_tag_io::FlacIOImpl;
+use crate::tags::id3_tag_io::ID3IOImpl;
 
 pub mod flac_tag_io;
+pub mod id3_tag_io;
 
 /// タグIO
 ///
@@ -26,6 +28,8 @@ pub fn tag_io_for(filepath: &Path) -> Option<Box<dyn TagIO>> {
     };
     match extension {
         "flac" => Some(Box::new(FlacIOImpl)),
+        "mp3" => Some(Box::new(ID3IOImpl)),
+        "wav" => Some(Box::new(ID3IOImpl)),
         _ => None
     }
 }
