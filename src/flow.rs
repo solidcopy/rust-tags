@@ -1,13 +1,12 @@
 use std::fmt;
 use std::path::Path;
 
-use crate::{audio_file, tags_file};
 use crate::audio_file::AudioFile;
 use crate::common::{Result, TAGS_FILEPATH, TARGET_FOLDER};
+use crate::{audio_file, tags_file};
 
 /// tagsファイルの有無で実行する処理を分岐する。
 pub fn execute() -> Result<()> {
-
     // tagsファイルの有無でインポート/エクスポートのどちらかを実行する
     if TAGS_FILEPATH.exists() {
         import_flow()?;

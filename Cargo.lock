@@ -45,6 +45,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "dsf"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "20f4ff4c128f14b36300e5ae44abf881c33e8fc131c7c183cafdf7c2b09abecd"
+dependencies = [
+ "id3",
+ "sampled_data_duration",
+]
+
+[[package]]
 name = "flate2"
 version = "1.0.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -136,9 +146,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "49b3de9ec5dc0a3417da371aab17d729997c15010e7fd24ff707773a33bddb64"
 
 [[package]]
+name = "sampled_data_duration"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a1c52ae966a8693b8d564a1dee9f2139907c9e375ee9544276bf61b5d97841ce"
+
+[[package]]
 name = "tags"
 version = "0.1.0"
 dependencies = [
+ "dsf",
  "id3",
  "imghdr",
  "metaflac",

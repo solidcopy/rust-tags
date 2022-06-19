@@ -6,10 +6,13 @@ use imghdr;
 
 use crate::common::Result;
 use crate::model::{AlbumInfo, DiscInfo, TrackInfo};
+use crate::tags::dsf_tag_io::DsfIOImpl;
 use crate::tags::flac_tag_io::FlacIOImpl;
 use crate::tags::id3_tag_io::ID3IOImpl;
 
+mod dsf_tag_io;
 pub mod flac_tag_io;
+mod id3_common;
 pub mod id3_tag_io;
 
 /// タグIO
@@ -27,10 +30,11 @@ pub fn tag_io_for(filepath: &Path) -> Option<Box<dyn TagIO>> {
         None => return None,
     };
     match extension {
+        "dsf" => Some(Box::new(DsfIOImpl)),
         "flac" => Some(Box::new(FlacIOImpl)),
         "mp3" => Some(Box::new(ID3IOImpl)),
         "wav" => Some(Box::new(ID3IOImpl)),
-        _ => None
+        _ => None,
     }
 }
 
@@ -232,7 +236,7 @@ impl ImageFormat {
                 }
                 false
             }
-            None => false
+            None => false,
         }
     }
 }
@@ -261,7 +265,12 @@ impl Image {
 
 impl Debug for Image {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "<Image mime=\"{}\" size=\"{}\"", self.format.mime(), self.data.len())
+        write!(
+            f,
+            "<Image mime=\"{}\" size=\"{}\"",
+            self.format.mime(),
+            self.data.len()
+        )
     }
 }
 

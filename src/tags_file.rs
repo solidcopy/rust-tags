@@ -20,14 +20,28 @@ pub fn load_tags_file(tags_filepath: &Path) -> Result<AlbumInfo> {
     let album = read_line(lines.next(), "アルバム名がありません。")?;
     let album_artist = read_line(lines.next(), "アルバムアーティスト名がありません。")?;
     let release_date = read_line(lines.next(), "発売日がありません。")?;
-    if !Regex::new(r"^\d{4}-\d{2}-\d{2}$").unwrap().is_match(release_date) {
-        return LoadTagsError { message: "発売日の形式が不正です。" }.into();
+    if !Regex::new(r"^\d{4}-\d{2}-\d{2}$")
+        .unwrap()
+        .is_match(release_date)
+    {
+        return LoadTagsError {
+            message: "発売日の形式が不正です。",
+        }
+        .into();
     }
 
-    let mut album_info = AlbumInfo::new(Some(album.to_string()), Some(album_artist.to_string()), Some(release_date.to_string()));
+    let mut album_info = AlbumInfo::new(
+        Some(album.to_string()),
+        Some(album_artist.to_string()),
+        Some(release_date.to_string()),
+    );
 
-    if read_line(lines.next(), "発売日の次の空白行がありませんでした。")?.len() > 0 {
-        return LoadTagsError { message: "発売日の次の行が空白行ではありません。" }.into();
+    if read_line(lines.next(), "発売日の次の空白行がありませんでした。")?.len() > 0
+    {
+        return LoadTagsError {
+            message: "発売日の次の行が空白行ではありません。",
+        }
+        .into();
     }
 
     let mut current_disc_info: &mut DiscInfo = album_info.new_disc();
@@ -40,7 +54,10 @@ pub fn load_tags_file(tags_filepath: &Path) -> Result<AlbumInfo> {
 
         if line.len() == 0 {
             if current_disc_info.tracks().len() == 0 {
-                return LoadTagsError { message: "空白行が連続しています。" }.into();
+                return LoadTagsError {
+                    message: "空白行が連続しています。",
+                }
+                .into();
             }
             current_disc_info = album_info.new_disc();
         } else {
@@ -62,12 +79,22 @@ pub fn load_tags_file(tags_filepath: &Path) -> Result<AlbumInfo> {
 fn read_tags_file(tags_filepath: &Path) -> Result<String> {
     let tags_file_contents = match fs::read(tags_filepath) {
         Ok(tags_file_contents) => tags_file_contents,
-        Err(_) => return LoadTagsError { message: "tagsファイルが読み込めません" }.into(),
+        Err(_) => {
+            return LoadTagsError {
+                message: "tagsファイルが読み込めません",
+            }
+            .into()
+        }
     };
 
     let tags_file_contents = match String::from_utf8(tags_file_contents) {
         Ok(tags_file_contents) => tags_file_contents,
-        Err(_) => return LoadTagsError { message: "tagsファイルの内容がUTF-8でエンコードされていません" }.into(),
+        Err(_) => {
+            return LoadTagsError {
+                message: "tagsファイルの内容がUTF-8でエンコードされていません",
+            }
+            .into()
+        }
     };
 
     Ok(tags_file_contents.nfc().collect::<String>())
@@ -76,7 +103,12 @@ fn read_tags_file(tags_filepath: &Path) -> Result<String> {
 fn read_line<'a>(line: Option<&'a str>, missing_error_message: &'static str) -> Result<&'a str> {
     match line {
         Some(line) => Ok(line.trim()),
-        None => return LoadTagsError { message: missing_error_message }.into(),
+        None => {
+            return LoadTagsError {
+                message: missing_error_message,
+            }
+            .into()
+        }
     }
 }
 
@@ -86,7 +118,12 @@ fn parse_track(line: &str) -> Result<(String, Vec<String>)> {
 
     let title = match split_line.next() {
         Some(title) => title,
-        None => return LoadTagsError { message: "タイトルがありません。" }.into(),
+        None => {
+            return LoadTagsError {
+                message: "タイトルがありません。",
+            }
+            .into()
+        }
     };
 
     let mut artists = vec![];
@@ -139,7 +176,10 @@ pub fn write_tags_file(tags_filepath: &Path, album_info: &AlbumInfo) -> Result<(
     let nfc = s.nfc().collect::<String>();
 
     if let Err(_) = fs::write(tags_filepath, &nfc) {
-        return WriteTagsError { message: "tagsファイルが書き込めませんでした。" }.into();
+        return WriteTagsError {
+            message: "tagsファイルが書き込めませんでした。",
+        }
+        .into();
     };
 
     Ok(())
