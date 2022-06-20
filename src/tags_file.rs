@@ -66,7 +66,9 @@ pub fn load_tags_file(tags_filepath: &Path) -> Result<AlbumInfo> {
         }
     }
 
-    if let Some(image_filepath) = find_image_file(tags_filepath.parent().unwrap())? {
+    let tags_full_filepath = tags_filepath.canonicalize()?;
+    let folder = tags_full_filepath.parent().unwrap();
+    if let Some(image_filepath) = find_image_file(folder)? {
         let image_format = ImageFormat::from_filepath(image_filepath.as_path())?;
         let image_data = fs::read(image_filepath)?;
         let image = Image::new(image_format, image_data);
@@ -83,7 +85,7 @@ fn read_tags_file(tags_filepath: &Path) -> Result<String> {
             return LoadTagsError {
                 message: "tagsファイルが読み込めません",
             }
-            .into()
+            .into();
         }
     };
 
@@ -93,7 +95,7 @@ fn read_tags_file(tags_filepath: &Path) -> Result<String> {
             return LoadTagsError {
                 message: "tagsファイルの内容がUTF-8でエンコードされていません",
             }
-            .into()
+            .into();
         }
     };
 
@@ -107,7 +109,7 @@ fn read_line<'a>(line: Option<&'a str>, missing_error_message: &'static str) -> 
             return LoadTagsError {
                 message: missing_error_message,
             }
-            .into()
+            .into();
         }
     }
 }
@@ -122,7 +124,7 @@ fn parse_track(line: &str) -> Result<(String, Vec<String>)> {
             return LoadTagsError {
                 message: "タイトルがありません。",
             }
-            .into()
+            .into();
         }
     };
 

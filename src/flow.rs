@@ -2,13 +2,13 @@ use std::fmt;
 use std::path::Path;
 
 use crate::audio_file::AudioFile;
-use crate::common::{Result, TAGS_FILEPATH, TARGET_FOLDER};
+use crate::common::{Result, TAGS_FILENAME, TARGET_FOLDER};
 use crate::{audio_file, tags_file};
 
 /// tagsファイルの有無で実行する処理を分岐する。
 pub fn execute() -> Result<()> {
     // tagsファイルの有無でインポート/エクスポートのどちらかを実行する
-    if TAGS_FILEPATH.exists() {
+    if TAGS_FILENAME.exists() {
         import_flow()?;
         rename_flow()?;
     } else {
@@ -22,7 +22,7 @@ pub fn execute() -> Result<()> {
 fn import_flow() -> Result<()> {
     println!("インポート処理を開始します。");
 
-    let album_info = tags_file::load_tags_file(&TAGS_FILEPATH)?;
+    let album_info = tags_file::load_tags_file(&TAGS_FILENAME)?;
 
     let mut audio_files = require_audio_files(&TARGET_FOLDER)?;
 
@@ -66,7 +66,7 @@ fn export_flow() -> Result<()> {
 
     let album_info = audio_file::to_album_info(&audio_files)?;
 
-    tags_file::write_tags_file(&TAGS_FILEPATH, &album_info)?;
+    tags_file::write_tags_file(&TAGS_FILENAME, &album_info)?;
 
     tags_file::write_art_work_file(album_info.art_work())?;
 
