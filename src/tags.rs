@@ -9,11 +9,13 @@ use crate::model::{AlbumInfo, DiscInfo, TrackInfo};
 use crate::tags::dsf_tag_io::DsfIOImpl;
 use crate::tags::flac_tag_io::FlacIOImpl;
 use crate::tags::id3_tag_io::ID3IOImpl;
+use crate::tags::m4a_tag_io::M4AIOImpl;
 
 mod dsf_tag_io;
 pub mod flac_tag_io;
 mod id3_common;
 pub mod id3_tag_io;
+mod m4a_tag_io;
 
 /// タグIO
 ///
@@ -32,6 +34,7 @@ pub fn tag_io_for(filepath: &Path) -> Option<Box<dyn TagIO>> {
     match extension {
         "dsf" => Some(Box::new(DsfIOImpl)),
         "flac" => Some(Box::new(FlacIOImpl)),
+        "m4a" => Some(Box::new(M4AIOImpl)),
         "mp3" => Some(Box::new(ID3IOImpl)),
         "wav" => Some(Box::new(ID3IOImpl)),
         _ => None,
@@ -282,7 +285,7 @@ pub struct ImageFormatError;
 
 impl fmt::Display for ImageFormatError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "画像のMIMEタイプが不正です")
+        write!(f, "画像の形式が不正です")
     }
 }
 
