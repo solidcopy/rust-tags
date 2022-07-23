@@ -1,3 +1,4 @@
+use std::env;
 use std::fmt;
 use std::path::Path;
 
@@ -5,14 +6,35 @@ use crate::audio_file::AudioFile;
 use crate::common::{Result, TAGS_FILENAME, TARGET_FOLDER};
 use crate::{audio_file, tags_file};
 
-/// tagsファイルの有無で実行する処理を分岐する。
+/// 実行する処理を判断して順次実行する。
 pub fn execute() -> Result<()> {
-    // tagsファイルの有無でインポート/エクスポートのどちらかを実行する
-    if TAGS_FILENAME.exists() {
-        import_flow()?;
-        rename_flow()?;
+    let args: Vec<String> = env::args().collect();
+
+    // サブコマンドが指定されていない場合(1つ目の引数はプログラム名)
+    if args.len() == 1 {
+        // tagsファイルの有無でインポート/エクスポートのどちらかを実行する
+        if TAGS_FILENAME.exists() {
+            import_flow()?;
+            rename_flow()?;
+        } else {
+            export_flow()?;
+        }
     } else {
-        export_flow()?;
+        for subcommand in args.iter().skip(1) {
+            match subcommand.as_str() {
+                "import" => import_flow()?,
+                "export" => export_flow()?,
+                "rename" => rename_flow()?,
+                "dump" => dump_flow()?,
+                "help" => help_flow()?,
+                _ => {
+                    return NoSuchSubcommandError {
+                        subcommand: subcommand.to_owned(),
+                    }
+                    .into()
+                }
+            }
+        }
     }
 
     Ok(())
@@ -75,6 +97,18 @@ fn export_flow() -> Result<()> {
     Ok(())
 }
 
+/// ダンプ処理を実行する。
+fn dump_flow() -> Result<()> {
+    println!("execute dump");
+    Ok(())
+}
+
+/// ヘルプ処理を実行する。
+fn help_flow() -> Result<()> {
+    println!("execute help");
+    Ok(())
+}
+
 /// 音楽ファイル不在エラー
 ///
 /// 処理する音楽ファイルがない場合に発生する。
@@ -91,6 +125,32 @@ impl std::error::Error for NoTargetError {}
 
 impl From<NoTargetError> for Result<Vec<AudioFile>> {
     fn from(error: NoTargetError) -> Self {
+        Err(Box::new(error))
+    }
+}
+
+/// サブコマンド不正エラー
+///
+/// 存在しないサブコマンドを指定した場合に発生する。
+#[derive(Debug, Clone)]
+pub struct NoSuchSubcommandError {
+    subcommand: String,
+}
+
+impl fmt::Display for NoSuchSubcommandError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "そのようなサブコマンドはありません: {}",
+            &self.subcommand
+        )
+    }
+}
+
+impl std::error::Error for NoSuchSubcommandError {}
+
+impl From<NoSuchSubcommandError> for Result<()> {
+    fn from(error: NoSuchSubcommandError) -> Self {
         Err(Box::new(error))
     }
 }
