@@ -25,8 +25,6 @@ pub fn execute() -> Result<()> {
                 "import" => import_flow()?,
                 "export" => export_flow()?,
                 "rename" => rename_flow()?,
-                "dump" => dump_flow()?,
-                "help" => help_flow()?,
                 _ => {
                     return NoSuchSubcommandError {
                         subcommand: subcommand.to_owned(),
@@ -94,18 +92,6 @@ fn export_flow() -> Result<()> {
 
     println!("エクスポート処理を完了しました。");
 
-    Ok(())
-}
-
-/// ダンプ処理を実行する。
-fn dump_flow() -> Result<()> {
-    println!("execute dump");
-    Ok(())
-}
-
-/// ヘルプ処理を実行する。
-fn help_flow() -> Result<()> {
-    println!("execute help");
     Ok(())
 }
 
