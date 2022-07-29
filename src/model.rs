@@ -12,8 +12,18 @@ pub struct AlbumInfo {
 
 impl AlbumInfo {
     /// アルバム情報を作成する。
-    pub fn new(album: Option<String>, album_artist: Option<String>, release_date: Option<String>) -> AlbumInfo {
-        AlbumInfo { album, album_artist, release_date, discs: Vec::with_capacity(1), art_work: None }
+    pub fn new(
+        album: Option<String>,
+        album_artist: Option<String>,
+        release_date: Option<String>,
+    ) -> AlbumInfo {
+        AlbumInfo {
+            album,
+            album_artist,
+            release_date,
+            discs: Vec::with_capacity(1),
+            art_work: None,
+        }
     }
 
     pub fn album(&self) -> Option<&str> {
@@ -85,10 +95,6 @@ pub struct TrackInfo {
 }
 
 impl TrackInfo {
-    pub fn new(title: Option<String>) -> TrackInfo {
-        TrackInfo { title, artists: vec![] }
-    }
-
     pub fn title(&self) -> Option<&str> {
         match &self.title {
             Some(title) => Some(title.as_str()),
@@ -98,9 +104,5 @@ impl TrackInfo {
 
     pub fn artists(&self) -> &Vec<String> {
         &self.artists
-    }
-
-    pub fn add_artist(&mut self, artist: String) {
-        self.artists.push(artist);
     }
 }

@@ -1,11 +1,12 @@
-mod tags_file;
-mod tags;
-mod flow;
 mod audio_file;
 mod common;
+mod flow;
 mod model;
+mod tags;
+mod tags_file;
+use anyhow::Result;
 
-fn main() -> common::Result<()> {
+fn main() -> Result<()> {
     flow::execute()?;
 
     Ok(())

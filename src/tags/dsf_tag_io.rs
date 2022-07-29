@@ -2,9 +2,9 @@ use std::path::Path;
 
 use dsf::DsfFile;
 
-use crate::common::Result;
 use crate::tags::id3_common::load_id3;
 use crate::tags::{TagIO, Tags};
+use anyhow::Result;
 
 /// ID3タグIO実装
 pub struct DsfIOImpl;

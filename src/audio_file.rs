@@ -1,14 +1,14 @@
-use std::fmt;
 use std::fmt::Write;
 use std::fs;
 use std::path::{Path, PathBuf};
 
 use regex::Regex;
 
-use crate::common::Result;
 use crate::model::AlbumInfo;
 use crate::tags;
 use crate::tags::{TagIO, Tags};
+use anyhow::Result;
+use thiserror::Error;
 
 /// 音楽ファイル
 pub struct AudioFile {
@@ -43,7 +43,9 @@ fn find_files(folder: &Path) -> Result<Vec<PathBuf>> {
                 }
             }
         }
-        Err(_) => return FileAccessError { message: "ファイル一覧が取得できませんでした" }.into(),
+        Err(_) => Err(FileAccessError::INSTANCE(
+            "ファイル一覧が取得できませんでした",
+        ))?,
     }
 
     filepaths.sort();
@@ -62,7 +64,7 @@ pub fn update_by_album_info(audio_files: &mut Vec<AudioFile>, album: &AlbumInfo)
 
             let audio_file = match audio_file_iter.next() {
                 Some(audio_file) => audio_file,
-                None => return TitlesMismatchFilesError.into(),
+                None => Err(TitlesMismatchFilesError::INSTANCE)?,
             };
 
             let mut tags = Tags::new();
@@ -75,7 +77,7 @@ pub fn update_by_album_info(audio_files: &mut Vec<AudioFile>, album: &AlbumInfo)
     }
 
     if let Some(_) = audio_file_iter.next() {
-        return TitlesMismatchFilesError.into();
+        Err(TitlesMismatchFilesError::INSTANCE)?;
     }
 
     Ok(())
@@ -85,7 +87,7 @@ pub fn update_by_album_info(audio_files: &mut Vec<AudioFile>, album: &AlbumInfo)
 pub fn to_album_info(audio_files: &Vec<AudioFile>) -> Result<AlbumInfo> {
     let first_file = match audio_files.first() {
         Some(audio_file) => audio_file,
-        None => return NoAudioFileError.into(),
+        None => Err(NoAudioFileError::INSTANCE)?,
     };
 
     let tags = first_file.load_tags()?;
@@ -139,11 +141,15 @@ impl AudioFile {
         let mut filename = String::new();
 
         if tags.number_of_discs().unwrap_or(1) > 1 {
-            let disc_number = add_zero_paddings(tags.disc_number().unwrap(), tags.number_of_discs().unwrap());
+            let disc_number =
+                add_zero_paddings(tags.disc_number().unwrap(), tags.number_of_discs().unwrap());
             write!(filename, "{}.", disc_number)?;
         };
 
-        let track_number = add_zero_paddings(tags.track_number().unwrap(), tags.number_of_tracks().unwrap());
+        let track_number = add_zero_paddings(
+            tags.track_number().unwrap(),
+            tags.number_of_tracks().unwrap(),
+        );
         write!(filename, "{}.", track_number.as_str())?;
 
         filename.push_str(tags.title().unwrap());
@@ -153,7 +159,9 @@ impl AudioFile {
             write!(filename, ".{}", extension)?;
         }
 
-        let filename = Regex::new("[*\\\\|:\"<>/?]").unwrap().replace_all(filename.as_str(), "");
+        let filename = Regex::new("[*\\\\|:\"<>/?]")
+            .unwrap()
+            .replace_all(filename.as_str(), "");
 
         let mut new_filepath = self.filepath.clone();
         new_filepath.set_file_name(&*filename);
@@ -178,59 +186,24 @@ fn add_zero_paddings(n: usize, max: usize) -> String {
 /// タイトル数ファイル数不一致エラー
 ///
 /// tagsファイルに書かれているタイトル数と対象となる音楽ファイル数が一致しない場合に発生する。
-#[derive(Debug, Clone)]
-pub struct TitlesMismatchFilesError;
-
-impl fmt::Display for TitlesMismatchFilesError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "対象ファイル数とtagsのタイトル数が一致しません")
-    }
-}
-
-impl std::error::Error for TitlesMismatchFilesError {}
-
-impl From<TitlesMismatchFilesError> for Result<()> {
-    fn from(error: TitlesMismatchFilesError) -> Self {
-        Err(Box::new(error))
-    }
+#[derive(Debug, Error)]
+pub enum TitlesMismatchFilesError {
+    #[error("対象ファイル数とtagsのタイトル数が一致しません")]
+    INSTANCE,
 }
 
 /// ファイルアクセスエラー
-#[derive(Debug, Clone)]
-pub struct FileAccessError {
-    message: &'static str,
-}
-
-impl fmt::Display for FileAccessError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        writeln!(f, "{}", self.message)
-    }
-}
-
-impl std::error::Error for FileAccessError {}
-
-impl From<FileAccessError> for Result<Vec<PathBuf>> {
-    fn from(error: FileAccessError) -> Self {
-        Err(Box::new(error))
-    }
+#[derive(Debug, Error)]
+pub enum FileAccessError {
+    #[error("{0}")]
+    INSTANCE(&'static str),
 }
 
 /// 音楽ファイル不在エラー
 ///
 /// 音楽ファイルがない場合に発生する。
-#[derive(Debug, Clone)]
-pub struct NoAudioFileError;
-
-impl fmt::Display for NoAudioFileError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "対象ファイルがありません")
-    }
-}
-
-impl std::error::Error for NoAudioFileError {}
-
-impl From<NoAudioFileError> for Result<AlbumInfo> {
-    fn from(error: NoAudioFileError) -> Self {
-        Err(Box::new(error))
-    }
+#[derive(Debug, Error)]
+pub enum NoAudioFileError {
+    #[error("対象ファイルがありません")]
+    INSTANCE,
 }

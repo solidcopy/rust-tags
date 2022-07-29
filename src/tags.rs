@@ -1,10 +1,10 @@
-use std::fmt;
-use std::fmt::{Debug, Formatter};
+use std::fmt::{self, Debug, Formatter};
 use std::path::Path;
 
+use anyhow::Result;
 use imghdr;
+use thiserror::Error;
 
-use crate::common::Result;
 use crate::model::{AlbumInfo, DiscInfo, TrackInfo};
 use crate::tags::dsf_tag_io::DsfIOImpl;
 use crate::tags::flac_tag_io::FlacIOImpl;
@@ -208,7 +208,7 @@ impl ImageFormat {
         match imghdr::from_bytes(image_data) {
             Some(imghdr::Type::Jpeg) => Ok(ImageFormat::JPEG),
             Some(imghdr::Type::Png) => Ok(ImageFormat::PNG),
-            _ => ImageFormatError.into(),
+            _ => Err(ImageFormatError::INSTANCE)?,
         }
     }
 
@@ -220,10 +220,10 @@ impl ImageFormat {
                 "jpg" => Ok(ImageFormat::JPEG),
                 "jpeg" => Ok(ImageFormat::JPEG),
                 "png" => Ok(ImageFormat::PNG),
-                _ => ImageFormatError.into(),
+                _ => Err(ImageFormatError::INSTANCE)?,
             }
         } else {
-            ImageFormatError.into()
+            Err(ImageFormatError::INSTANCE)?
         }
     }
 
@@ -280,19 +280,8 @@ impl Debug for Image {
 /// 画像フォーマットエラー
 ///
 /// 非対応の形式である、または画像ファイルでないデータやファイルを画像として処理しようとすると発生する。
-#[derive(Debug, Clone)]
-pub struct ImageFormatError;
-
-impl fmt::Display for ImageFormatError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "画像の形式が不正です")
-    }
-}
-
-impl std::error::Error for ImageFormatError {}
-
-impl From<ImageFormatError> for Result<ImageFormat> {
-    fn from(error: ImageFormatError) -> Self {
-        Err(Box::new(error))
-    }
+#[derive(Debug, Error)]
+pub enum ImageFormatError {
+    #[error("対応していない画像フォーマットです")]
+    INSTANCE,
 }

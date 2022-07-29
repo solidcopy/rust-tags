@@ -1,4 +1,3 @@
-use std::fmt;
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -6,9 +5,10 @@ use regex;
 use regex::Regex;
 use unicode_normalization::UnicodeNormalization;
 
-use crate::common::Result;
 use crate::model::{AlbumInfo, DiscInfo};
 use crate::tags::{Image, ImageFormat};
+use anyhow::Result;
+use thiserror::Error;
 
 /// tagsファイルを読み込んでアルバム情報を作成する。
 pub fn load_tags_file(tags_filepath: &Path) -> Result<AlbumInfo> {
@@ -24,10 +24,7 @@ pub fn load_tags_file(tags_filepath: &Path) -> Result<AlbumInfo> {
         .unwrap()
         .is_match(release_date)
     {
-        return LoadTagsError {
-            message: "発売日の形式が不正です。",
-        }
-        .into();
+        Err(LoadTagsError::INSTANCE("発売日の形式が不正です。"))?
     }
 
     let mut album_info = AlbumInfo::new(
@@ -38,10 +35,9 @@ pub fn load_tags_file(tags_filepath: &Path) -> Result<AlbumInfo> {
 
     if read_line(lines.next(), "発売日の次の空白行がありませんでした。")?.len() > 0
     {
-        return LoadTagsError {
-            message: "発売日の次の行が空白行ではありません。",
-        }
-        .into();
+        Err(LoadTagsError::INSTANCE(
+            "発売日の次の行が空白行ではありません。",
+        ))?
     }
 
     let mut current_disc_info: &mut DiscInfo = album_info.new_disc();
@@ -54,10 +50,7 @@ pub fn load_tags_file(tags_filepath: &Path) -> Result<AlbumInfo> {
 
         if line.len() == 0 {
             if current_disc_info.tracks().len() == 0 {
-                return LoadTagsError {
-                    message: "空白行が連続しています。",
-                }
-                .into();
+                Err(LoadTagsError::INSTANCE("空白行が連続しています。"))?
             }
             current_disc_info = album_info.new_disc();
         } else {
@@ -81,22 +74,14 @@ pub fn load_tags_file(tags_filepath: &Path) -> Result<AlbumInfo> {
 fn read_tags_file(tags_filepath: &Path) -> Result<String> {
     let tags_file_contents = match fs::read(tags_filepath) {
         Ok(tags_file_contents) => tags_file_contents,
-        Err(_) => {
-            return LoadTagsError {
-                message: "tagsファイルが読み込めません",
-            }
-            .into();
-        }
+        Err(_) => Err(LoadTagsError::INSTANCE("tagsファイルが読み込めません"))?,
     };
 
     let tags_file_contents = match String::from_utf8(tags_file_contents) {
         Ok(tags_file_contents) => tags_file_contents,
-        Err(_) => {
-            return LoadTagsError {
-                message: "tagsファイルの内容がUTF-8でエンコードされていません",
-            }
-            .into();
-        }
+        Err(_) => Err(LoadTagsError::INSTANCE(
+            "tagsファイルの内容がUTF-8でエンコードされていません",
+        ))?,
     };
 
     Ok(tags_file_contents.nfc().collect::<String>())
@@ -105,12 +90,7 @@ fn read_tags_file(tags_filepath: &Path) -> Result<String> {
 fn read_line<'a>(line: Option<&'a str>, missing_error_message: &'static str) -> Result<&'a str> {
     match line {
         Some(line) => Ok(line.trim()),
-        None => {
-            return LoadTagsError {
-                message: missing_error_message,
-            }
-            .into();
-        }
+        None => Err(LoadTagsError::INSTANCE(missing_error_message))?,
     }
 }
 
@@ -120,12 +100,7 @@ fn parse_track(line: &str) -> Result<(String, Vec<String>)> {
 
     let title = match split_line.next() {
         Some(title) => title,
-        None => {
-            return LoadTagsError {
-                message: "タイトルがありません。",
-            }
-            .into();
-        }
+        None => Err(LoadTagsError::INSTANCE("タイトルがありません。"))?,
     };
 
     let mut artists = vec![];
@@ -178,10 +153,9 @@ pub fn write_tags_file(tags_filepath: &Path, album_info: &AlbumInfo) -> Result<(
     let nfc = s.nfc().collect::<String>();
 
     if let Err(_) = fs::write(tags_filepath, &nfc) {
-        return WriteTagsError {
-            message: "tagsファイルが書き込めませんでした。",
-        }
-        .into();
+        Err(WriteTagsError::INSTANCE(
+            "tagsファイルが書き込めませんでした。",
+        ))?
     };
 
     Ok(())
@@ -203,59 +177,15 @@ pub fn write_art_work_file(art_work: Option<&Image>) -> Result<()> {
 }
 
 /// tags読み込みエラー
-#[derive(Debug, Clone)]
-pub struct LoadTagsError {
-    message: &'static str,
-}
-
-impl fmt::Display for LoadTagsError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        writeln!(f, "{}", self.message)
-    }
-}
-
-impl std::error::Error for LoadTagsError {}
-
-impl From<LoadTagsError> for Result<(String, Vec<String>)> {
-    fn from(error: LoadTagsError) -> Self {
-        Err(Box::new(error))
-    }
-}
-
-impl From<LoadTagsError> for Result<&str> {
-    fn from(error: LoadTagsError) -> Self {
-        Err(Box::new(error))
-    }
-}
-
-impl From<LoadTagsError> for Result<String> {
-    fn from(error: LoadTagsError) -> Self {
-        Err(Box::new(error))
-    }
-}
-
-impl From<LoadTagsError> for Result<AlbumInfo> {
-    fn from(error: LoadTagsError) -> Self {
-        Err(Box::new(error))
-    }
+#[derive(Debug, Error)]
+pub enum LoadTagsError {
+    #[error("{0}")]
+    INSTANCE(&'static str),
 }
 
 /// tags書き込みエラー
-#[derive(Debug, Clone)]
-pub struct WriteTagsError {
-    message: &'static str,
-}
-
-impl fmt::Display for WriteTagsError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        writeln!(f, "{}", self.message)
-    }
-}
-
-impl std::error::Error for WriteTagsError {}
-
-impl From<WriteTagsError> for Result<()> {
-    fn from(error: WriteTagsError) -> Self {
-        Err(Box::new(error))
-    }
+#[derive(Debug, Error)]
+pub enum WriteTagsError {
+    #[error("{0}")]
+    INSTANCE(&'static str),
 }

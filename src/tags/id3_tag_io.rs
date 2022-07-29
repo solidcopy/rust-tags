@@ -4,9 +4,9 @@ use std::str::FromStr;
 use id3::frame::{Picture, PictureType};
 use id3::{Tag, TagLike, Timestamp, Version};
 
-use crate::common::Result;
 use crate::tags::id3_common::load_id3;
 use crate::tags::{TagIO, Tags};
+use anyhow::Result;
 
 /// ID3タグIO実装
 pub struct ID3IOImpl;

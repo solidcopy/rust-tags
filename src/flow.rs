@@ -1,9 +1,10 @@
+use anyhow::Result;
 use std::env;
-use std::fmt;
 use std::path::Path;
+use thiserror::Error;
 
 use crate::audio_file::AudioFile;
-use crate::common::{Result, TAGS_FILENAME, TARGET_FOLDER};
+use crate::common::{TAGS_FILENAME, TARGET_FOLDER};
 use crate::{audio_file, tags_file};
 
 /// 実行する処理を判断して順次実行する。
@@ -25,12 +26,7 @@ pub fn execute() -> Result<()> {
                 "import" => import_flow()?,
                 "export" => export_flow()?,
                 "rename" => rename_flow()?,
-                _ => {
-                    return NoSuchSubcommandError {
-                        subcommand: subcommand.to_owned(),
-                    }
-                    .into()
-                }
+                _ => Err(NoSuchSubcommandError::INSTANCE(subcommand.to_owned()))?,
             }
         }
     }
@@ -72,7 +68,7 @@ fn require_audio_files(folder: &Path) -> Result<Vec<AudioFile>> {
     let audio_files = audio_file::find_audio_files(folder)?;
 
     if audio_files.len() == 0 {
-        return NoTargetError.into();
+        Err(NoTargetError::INSTANCE)?
     }
 
     Ok(audio_files)
@@ -98,45 +94,17 @@ fn export_flow() -> Result<()> {
 /// 音楽ファイル不在エラー
 ///
 /// 処理する音楽ファイルがない場合に発生する。
-#[derive(Debug, Clone)]
-pub struct NoTargetError;
-
-impl fmt::Display for NoTargetError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "処理対象がありません")
-    }
-}
-
-impl std::error::Error for NoTargetError {}
-
-impl From<NoTargetError> for Result<Vec<AudioFile>> {
-    fn from(error: NoTargetError) -> Self {
-        Err(Box::new(error))
-    }
+#[derive(Debug, Error)]
+pub enum NoTargetError {
+    #[error("処理対象がありません")]
+    INSTANCE,
 }
 
 /// サブコマンド不正エラー
 ///
 /// 存在しないサブコマンドを指定した場合に発生する。
-#[derive(Debug, Clone)]
-pub struct NoSuchSubcommandError {
-    subcommand: String,
-}
-
-impl fmt::Display for NoSuchSubcommandError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "そのようなサブコマンドはありません: {}",
-            &self.subcommand
-        )
-    }
-}
-
-impl std::error::Error for NoSuchSubcommandError {}
-
-impl From<NoSuchSubcommandError> for Result<()> {
-    fn from(error: NoSuchSubcommandError) -> Self {
-        Err(Box::new(error))
-    }
+#[derive(Debug, Error)]
+pub enum NoSuchSubcommandError {
+    #[error("そのようなサブコマンドはありません: {0}")]
+    INSTANCE(String),
 }

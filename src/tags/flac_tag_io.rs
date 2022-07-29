@@ -1,11 +1,11 @@
 use std::path::Path;
 use std::str::FromStr;
 
-use metaflac::{BlockType, Tag};
 use metaflac::block::PictureType;
+use metaflac::{BlockType, Tag};
 
-use crate::common::Result;
 use crate::tags::{Image, ImageFormat, TagIO, Tags};
+use anyhow::Result;
 
 /// FLACタグIO実装
 pub struct FlacIOImpl;
@@ -79,7 +79,7 @@ fn set_string(file_tag: &mut Tag, tag_name: &str, s: Option<&str>) {
 fn get_usize(tags: &Tag, item_name: &str) -> Option<usize> {
     match get_string(tags, item_name) {
         Some(value) => Some(usize::from_str(value).unwrap()),
-        None => None
+        None => None,
     }
 }
 

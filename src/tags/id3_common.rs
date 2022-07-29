@@ -1,8 +1,8 @@
 use id3::frame::PictureType;
 use id3::{Tag, TagLike};
 
-use crate::common::Result;
 use crate::tags::{Image, ImageFormat, Tags};
+use anyhow::Result;
 
 pub fn load_id3(file_tags: &Tag) -> Result<Tags> {
     let mut tags = Tags::new();

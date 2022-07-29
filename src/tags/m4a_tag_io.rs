@@ -2,8 +2,8 @@ use std::path::Path;
 
 use mp4ameta::{Img, ImgFmt, Tag};
 
-use crate::common::Result;
 use crate::tags::{Image, ImageFormat, ImageFormatError, TagIO, Tags};
+use anyhow::Result;
 
 /// M4AタグIO実装
 pub struct M4AIOImpl;
@@ -86,7 +86,7 @@ fn to_common_image_format(m4a_image_format: &ImgFmt) -> Result<ImageFormat> {
     match m4a_image_format {
         ImgFmt::Jpeg => Ok(ImageFormat::JPEG),
         ImgFmt::Png => Ok(ImageFormat::PNG),
-        _ => ImageFormatError.into(),
+        _ => Err(ImageFormatError::INSTANCE)?,
     }
 }
 
