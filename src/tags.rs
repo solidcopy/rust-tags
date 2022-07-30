@@ -12,9 +12,9 @@ use crate::tags::id3_tag_io::ID3IOImpl;
 use crate::tags::m4a_tag_io::M4AIOImpl;
 
 mod dsf_tag_io;
-pub mod flac_tag_io;
+mod flac_tag_io;
 mod id3_common;
-pub mod id3_tag_io;
+mod id3_tag_io;
 mod m4a_tag_io;
 
 /// タグIO
