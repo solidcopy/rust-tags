@@ -55,7 +55,7 @@ fn find_files(folder: &Path) -> Result<Vec<PathBuf>> {
 
 /// アルバム情報で音楽ファイルのタグ情報を更新する。
 pub fn update_by_album_info(audio_files: &mut Vec<AudioFile>, album: &AlbumInfo) -> Result<()> {
-    let mut audio_file_iter = audio_files.iter_mut();
+    let mut audio_file_iter = audio_files.iter();
 
     for (disc_index, disc) in album.discs().iter().enumerate() {
         let disc_number = disc_index + 1;

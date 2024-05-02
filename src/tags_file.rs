@@ -15,7 +15,6 @@ pub fn load_tags_file(tags_filepath: &Path) -> Result<AlbumInfo> {
     let tags_file_contents = read_tags_file(tags_filepath)?;
 
     let mut lines = tags_file_contents.lines();
-    let lines = &mut lines;
 
     let album = read_line(lines.next(), "アルバム名がありません。")?;
     let album_artist = read_line(lines.next(), "アルバムアーティスト名がありません。")?;

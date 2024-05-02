@@ -209,22 +209,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "tags"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "dsf",
- "id3",
- "imghdr",
- "metaflac",
- "mp4ameta",
- "once_cell",
- "regex",
- "thiserror",
- "unicode-normalization",
-]
-
-[[package]]
 name = "thiserror"
 version = "1.0.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -272,4 +256,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d54590932941a9e9266f0832deed84ebe1bf2e4c9e4a3554d393d18f5e854bf9"
 dependencies = [
  "tinyvec",
+]
+
+[[package]]
+name = "utag"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "dsf",
+ "id3",
+ "imghdr",
+ "metaflac",
+ "mp4ameta",
+ "once_cell",
+ "regex",
+ "thiserror",
+ "unicode-normalization",
 ]

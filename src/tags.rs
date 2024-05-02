@@ -72,7 +72,7 @@ impl Tags {
     }
 
     pub fn album(&self) -> Option<&str> {
-        self.album.as_ref().map(|s| s.as_str())
+        self.album.as_ref().map(String::as_str)
     }
 
     pub fn set_album(&mut self, album: Option<String>) {
@@ -80,7 +80,7 @@ impl Tags {
     }
 
     pub fn album_artist(&self) -> Option<&str> {
-        self.album_artist.as_ref().map(|s| s.as_str())
+        self.album_artist.as_ref().map(String::as_str)
     }
 
     pub fn set_album_artist(&mut self, album_artist: Option<String>) {
@@ -88,7 +88,7 @@ impl Tags {
     }
 
     pub fn release_date(&self) -> Option<&str> {
-        self.release_date.as_ref().map(|s| s.as_str())
+        self.release_date.as_ref().map(String::as_str)
     }
 
     pub fn set_release_date(&mut self, release_date: Option<String>) {
@@ -136,7 +136,7 @@ impl Tags {
     }
 
     pub fn title(&self) -> Option<&str> {
-        self.title.as_ref().map(|s| s.as_str())
+        self.title.as_ref().map(String::as_str)
     }
 
     pub fn set_title(&mut self, title: Option<String>) {
