@@ -3,7 +3,6 @@ name: Rust Build
 on:
   push:
     tags: [ 'v*.*.*' ]
-  workflow_dispatch:
 
 jobs:
   build:
@@ -37,12 +36,19 @@ jobs:
           command: build
           args: --release --target ${{ matrix.target }}
 
+      - name: Create Archive
+        uses: vimtor/action-zip@v1.2
+        with:
+          files: target/${{ matrix.target }}/release/${{ matrix.binary_name }}
+          dest: utag-${{ matrix.target }}.zip
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: utag-${{ matrix.target }}
           path: |
-            target/${{ matrix.target }}/release/${{ matrix.binary_name }}
+            utag-${{ matrix.target }}.zip
+          compression-level: 0
 
   release:
     needs: build
@@ -50,33 +56,14 @@ jobs:
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
-
       - name: List all artifacts
         run: ls -R
-
-      - name: Create Archive (Mac)
-        uses: vimtor/action-zip@v1.2
-        with:
-          files: utag-x86_64-apple-darwin/utag
-          dest: utag-x86_64-apple-darwin.zip
-      - name: Create Archive (Windows)
-        uses: vimtor/action-zip@v1.2
-        with:
-          files: utag-x86_64-pc-windows-msvc/utag.exe
-          dest: utag-x86_64-pc-windows-msvc.zip
-      - name: Create Archive (Linux)
-        uses: vimtor/action-zip@v1.2
-        with:
-          files: utag-x86_64-unknown-linux-gnu/utag
-          dest: utag-x86_64-unknown-linux-gnu.zip
-
-      - name: List archives
-        run: ls *.zip
-
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            ./utag-*.zip
+            ./utag-x86_64-unknown-linux-gnu/utag-x86_64-unknown-linux-gnu.zip
+            ./utag-x86_64-apple-darwin/utag-x86_64-apple-darwin.zip
+            ./utag-x86_64-pc-windows-msvc/utag-x86_64-pc-windows-msvc.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
