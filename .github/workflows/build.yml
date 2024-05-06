@@ -50,15 +50,12 @@ jobs:
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
-      - name: List all artifacts
-        run: ls -R
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: latest
           files: |
-            x86_64-unknown-linux-gnu
-            x86_64-apple-darwin
-            x86_64-pc-windows-msvc
+            x86_64-unknown-linux-gnu/utag
+            x86_64-apple-darwin/utag
+            x86_64-pc-windows-msvc/utag.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
