@@ -38,9 +38,10 @@ jobs:
           args: --release --target ${{ matrix.target }}
 
       - name: Create Archive
-        uses: montudor/action-zip@v1
+        uses: vimtor/action-zip@v1.2
         with:
-          args: zip -j utag-${{ matrix.target }}.zip target/${{ matrix.target }}/release/${{ matrix.binary_name }}
+          files: target/${{ matrix.target }}/release/${{ matrix.binary_name }}
+          dest: utag-${{ matrix.target }}.zip
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
