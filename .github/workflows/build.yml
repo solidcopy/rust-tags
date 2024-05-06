@@ -37,12 +37,18 @@ jobs:
           command: build
           args: --release --target ${{ matrix.target }}
 
+      - name: Create Archive
+        uses: montudor/action-zip@v1
+        with:
+          args: zip -j utag-${{ matrix.target }}.zip target/${{ matrix.target }}/release/${{ matrix.binary_name }}
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.target }}
+          name: utag-${{ matrix.target }}
           path: |
-            target/${{ matrix.target }}/release/${{ matrix.binary_name }}
+            utag-${{ matrix.target }}.zip
+          compression-level: 0
 
   release:
     needs: build
@@ -56,8 +62,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            ./x86_64-unknown-linux-gnu/utag
-            ./x86_64-apple-darwin/utag
-            ./x86_64-pc-windows-msvc/utag.exe
+            ./utag-*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
